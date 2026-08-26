@@ -2,22 +2,13 @@ const cursor = document.querySelector('.cursor-glow');
 
 if (cursor && window.matchMedia('(pointer:fine)').matches) {
   window.addEventListener('pointermove', (event) => {
-    cursor.animate(
-      { left: `${event.clientX}px`, top: `${event.clientY}px` },
-      { duration: 500, fill: 'forwards', easing: 'cubic-bezier(.2,.75,.25,1)' }
-    );
+    cursor.animate({ left: `${event.clientX}px`, top: `${event.clientY}px` }, { duration: 500, fill: 'forwards', easing: 'cubic-bezier(.2,.75,.25,1)' });
   }, { passive: true });
 }
 
 const observer = new IntersectionObserver((entries) => {
-  entries.forEach((entry) => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-      observer.unobserve(entry.target);
-    }
-  });
+  entries.forEach((entry) => { if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); } });
 }, { threshold: 0.14, rootMargin: '0px 0px -30px' });
-
 document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
 
 const heroImage = document.querySelector('[data-parallax]');
@@ -45,7 +36,6 @@ if (window.matchMedia('(pointer:fine)').matches) {
     });
     card.addEventListener('pointerleave', () => { card.style.transform = ''; });
   });
-
   document.querySelectorAll('.magnetic').forEach((button) => {
     button.addEventListener('pointermove', (event) => {
       const rect = button.getBoundingClientRect();
@@ -65,57 +55,21 @@ if (menuButton && nav) {
     menuButton.setAttribute('aria-expanded', String(!open));
     nav.classList.toggle('mobile-open', !open);
   });
-  nav.querySelectorAll('a').forEach((link) => {
-    link.addEventListener('click', () => {
-      menuButton.setAttribute('aria-expanded', 'false');
-      nav.classList.remove('mobile-open');
-    });
-  });
+  nav.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => {
+    menuButton.setAttribute('aria-expanded', 'false');
+    nav.classList.remove('mobile-open');
+  }));
 }
 
 const style = document.createElement('style');
 style.textContent = `
-@media (max-width:900px){
-  .desktop-nav.mobile-open{display:flex;position:absolute;top:76px;left:0;right:0;margin:0;padding:24px 7vw 30px;background:rgba(9,9,9,.98);border-bottom:1px solid rgba(255,255,255,.1);flex-direction:column;gap:12px;backdrop-filter:blur(16px);animation:menuIn .35s ease both}
-  .desktop-nav.mobile-open a{font-size:12px;padding:12px 0}
-}
+@media (max-width:900px){.desktop-nav.mobile-open{display:flex;position:absolute;top:76px;left:0;right:0;margin:0;padding:24px 7vw 30px;background:rgba(9,9,9,.98);border-bottom:1px solid rgba(255,255,255,.1);flex-direction:column;gap:12px;backdrop-filter:blur(16px);animation:menuIn .35s ease both}.desktop-nav.mobile-open a{font-size:12px;padding:12px 0}}
 @keyframes menuIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
-
-/* Cinematic hero */
-.hero{isolation:isolate;background:#050505}
-.hero-image{transform:scale(1.065);transition:transform 1.8s cubic-bezier(.16,1,.3,1),filter 1.8s ease;filter:saturate(.62) contrast(1.12) brightness(.72)}
-.hero:before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(circle at 72% 48%,rgba(201,167,106,.10),transparent 26%),linear-gradient(180deg,rgba(0,0,0,.28),transparent 35%,rgba(0,0,0,.45))}
-.hero-sheen{position:absolute;inset:-20%;z-index:1;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.055) 48%,transparent 58%);transform:translateX(-80%) rotate(0deg);animation:heroSheen 7s cubic-bezier(.2,.65,.2,1) 1.2s infinite;mix-blend-mode:screen}
-.hero-cinematic{z-index:3}
-.hero-eyebrow{opacity:0;transform:translateY(12px);animation:heroFadeUp 1s .35s cubic-bezier(.2,.75,.25,1) forwards}
-.hero-eyebrow>span:first-child{width:0;animation:eyebrowLine 1s .75s cubic-bezier(.2,.75,.25,1) forwards}
-.hero-line{display:block;overflow:hidden;height:.96em;padding-bottom:.06em}
-.hero-line>span{display:inline-block;transform:translateY(115%);opacity:0;animation:titleRise 1.15s cubic-bezier(.16,1,.3,1) forwards}
-.hero-line:nth-child(1)>span{animation-delay:.45s}
-.hero-line:nth-child(2)>span{animation-delay:.57s}
-.hero-line:nth-child(3)>span{animation-delay:.69s}
-.hero-gold{color:var(--gold);font-style:italic}
-.hero-subcopy{opacity:0;transform:translateY(14px);animation:heroFadeUp .9s .95s cubic-bezier(.2,.75,.25,1) forwards}
-.hero-actions{opacity:0;transform:translateY(14px);animation:heroFadeUp .9s 1.1s cubic-bezier(.2,.75,.25,1) forwards}
-.hero-actions .button-gold{box-shadow:0 0 0 rgba(201,167,106,0);animation:buttonGlow 2.8s 2.2s ease-in-out infinite}
-.hero-meta{position:absolute;right:4vw;bottom:9%;z-index:3;display:flex;gap:18px;align-items:center;writing-mode:vertical-rl;color:rgba(255,255,255,.45);font-size:8px;letter-spacing:2px;opacity:0;animation:heroFadeIn 1s 1.35s ease forwards}
-.hero-meta span+span:before{content:'·';margin-bottom:18px;color:var(--gold)}
-.scroll-cue{z-index:3;animation:scrollCue 2.2s 1.6s ease-in-out infinite}
-@keyframes titleRise{0%{transform:translateY(115%);opacity:0;filter:blur(8px)}60%{opacity:1}100%{transform:translateY(0);opacity:1;filter:blur(0)}}
-@keyframes heroFadeUp{to{opacity:1;transform:translateY(0)}}
-@keyframes heroFadeIn{to{opacity:1}}
-@keyframes eyebrowLine{to{width:28px}}
-@keyframes heroSheen{0%,58%{transform:translateX(-85%)}78%,100%{transform:translateX(85%)}}
-@keyframes buttonGlow{0%,100%{box-shadow:0 0 0 rgba(201,167,106,0)}50%{box-shadow:0 0 34px rgba(201,167,106,.16)}}
-@keyframes scrollCue{0%,100%{transform:translateY(0);opacity:.65}50%{transform:translateY(8px);opacity:1}}
-.hero-content h1{perspective:800px;text-shadow:0 12px 40px rgba(0,0,0,.28)}
-@media(max-width:900px){.hero-meta{display:none}.hero-sheen{animation-duration:9s}.hero-line{height:1em}.hero-image{filter:saturate(.58) contrast(1.1) brightness(.66)}}
-@media(max-width:560px){.hero-cinematic{margin-top:20px}.hero-image{background-position:62% center}.hero-sheen{display:none}}
-@media(prefers-reduced-motion:reduce){.hero-image{transform:none!important;transition:none}.hero-sheen{display:none}.hero-eyebrow,.hero-subcopy,.hero-actions,.hero-meta{opacity:1;transform:none;animation:none}.hero-line{overflow:visible}.hero-line>span{opacity:1;transform:none;animation:none;filter:none}.scroll-cue{animation:none}.hero-actions .button-gold{animation:none}}
+.hero{isolation:isolate;background:#050505}.hero-image{transform:scale(1.065);transition:transform 1.8s cubic-bezier(.16,1,.3,1),filter 1.8s ease;filter:saturate(.62) contrast(1.12) brightness(.72)}.hero:before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(circle at 72% 48%,rgba(201,167,106,.10),transparent 26%),linear-gradient(180deg,rgba(0,0,0,.28),transparent 35%,rgba(0,0,0,.45))}.hero-sheen{position:absolute;inset:-20%;z-index:1;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.055) 48%,transparent 58%);transform:translateX(-80%) rotate(0deg);animation:heroSheen 7s cubic-bezier(.2,.65,.2,1) 1.2s infinite;mix-blend-mode:screen}.hero-cinematic{z-index:3}.hero-eyebrow{opacity:0;transform:translateY(12px);animation:heroFadeUp 1s .35s cubic-bezier(.2,.75,.25,1) forwards}.hero-eyebrow>span:first-child{width:0;animation:eyebrowLine 1s .75s cubic-bezier(.2,.75,.25,1) forwards}.hero-line{display:block;overflow:hidden;height:.96em;padding-bottom:.06em}.hero-line>span{display:inline-block;transform:translateY(115%);opacity:0;animation:titleRise 1.15s cubic-bezier(.16,1,.3,1) forwards}.hero-line:nth-child(1)>span{animation-delay:.45s}.hero-line:nth-child(2)>span{animation-delay:.57s}.hero-line:nth-child(3)>span{animation-delay:.69s}.hero-gold{color:var(--gold);font-style:italic}.hero-subcopy{opacity:0;transform:translateY(14px);animation:heroFadeUp .9s .95s cubic-bezier(.2,.75,.25,1) forwards}.hero-actions{opacity:0;transform:translateY(14px);animation:heroFadeUp .9s 1.1s cubic-bezier(.2,.75,.25,1) forwards}.hero-actions .button-gold{box-shadow:0 0 0 rgba(201,167,106,0);animation:buttonGlow 2.8s 2.2s ease-in-out infinite}.hero-meta{position:absolute;right:4vw;bottom:9%;z-index:3;display:flex;gap:18px;align-items:center;writing-mode:vertical-rl;color:rgba(255,255,255,.45);font-size:8px;letter-spacing:2px;opacity:0;animation:heroFadeIn 1s 1.35s ease forwards}.hero-meta span+span:before{content:'·';margin-bottom:18px;color:var(--gold)}.scroll-cue{z-index:3;animation:scrollCue 2.2s 1.6s ease-in-out infinite}@keyframes titleRise{0%{transform:translateY(115%);opacity:0;filter:blur(8px)}60%{opacity:1}100%{transform:translateY(0);opacity:1;filter:blur(0)}}@keyframes heroFadeUp{to{opacity:1;transform:translateY(0)}}@keyframes heroFadeIn{to{opacity:1}}@keyframes eyebrowLine{to{width:28px}}@keyframes heroSheen{0%,58%{transform:translateX(-85%)}78%,100%{transform:translateX(85%)}}@keyframes buttonGlow{0%,100%{box-shadow:0 0 0 rgba(201,167,106,0)}50%{box-shadow:0 0 34px rgba(201,167,106,.16)}}@keyframes scrollCue{0%,100%{transform:translateY(0);opacity:.65}50%{transform:translateY(8px);opacity:1}}.hero-content h1{perspective:800px;text-shadow:0 12px 40px rgba(0,0,0,.28)}
+@media(max-width:900px){.hero-meta{display:none}.hero-sheen{animation-duration:9s}.hero-line{height:1em}.hero-image{filter:saturate(.58) contrast(1.1) brightness(.66)}}@media(max-width:560px){.hero-cinematic{margin-top:20px}.hero-image{background-position:62% center}.hero-sheen{display:none}}@media(prefers-reduced-motion:reduce){.hero-image{transform:none!important;transition:none}.hero-sheen{display:none}.hero-eyebrow,.hero-subcopy,.hero-actions,.hero-meta{opacity:1;transform:none;animation:none}.hero-line{overflow:visible}.hero-line>span{opacity:1;transform:none;animation:none;filter:none}.scroll-cue{animation:none}.hero-actions .button-gold{animation:none}}
 `;
 document.head.appendChild(style);
 
-// Subtle active-section navigation state.
 const sections = [...document.querySelectorAll('main section[id]')];
 const links = [...document.querySelectorAll('.desktop-nav a')];
 const sectionObserver = new IntersectionObserver((entries) => {
@@ -125,3 +79,83 @@ const sectionObserver = new IntersectionObserver((entries) => {
   });
 }, { rootMargin: '-35% 0px -55% 0px', threshold: 0 });
 sections.forEach((section) => sectionObserver.observe(section));
+
+// Load the dedicated lightbox stylesheet without changing the existing design system.
+const lightboxStyles = document.createElement('link');
+lightboxStyles.rel = 'stylesheet';
+lightboxStyles.href = 'lightbox.css';
+document.head.appendChild(lightboxStyles);
+
+// Full-screen gallery lightbox.
+const galleryItems = [...document.querySelectorAll('[data-gallery-index]')].filter((el) => el.classList.contains('gallery-item'));
+const galleryData = [
+  { title: 'Black & Grey', image: 'https://images.unsplash.com/photo-1542727365-19732a80dc1d?auto=format&fit=crop&w=1800&q=90' },
+  { title: 'Fine Line', image: 'https://images.unsplash.com/photo-1598373182133-52452f7691ef?auto=format&fit=crop&w=1800&q=90' },
+  { title: 'Botanical', image: 'https://images.unsplash.com/photo-1555685812-4b943f1cb0eb?auto=format&fit=crop&w=1800&q=90' },
+  { title: 'Neo Traditional', image: 'https://images.unsplash.com/photo-1590246814883-57c5a0b3e1d6?auto=format&fit=crop&w=1800&q=90' },
+  { title: 'Custom Work', image: 'https://images.unsplash.com/photo-1570215171424-f7432a3d0a08?auto=format&fit=crop&w=2000&q=90' }
+];
+const lightbox = document.querySelector('#lightbox');
+const lightboxImage = document.querySelector('.lightbox-image');
+const lightboxTitle = document.querySelector('.lightbox-title');
+const lightboxCounter = document.querySelector('.lightbox-counter');
+const lightboxProgress = document.querySelector('.lightbox-progress span');
+const prevButton = document.querySelector('.lightbox-prev');
+const nextButton = document.querySelector('.lightbox-next');
+const closeButtons = document.querySelectorAll('[data-lightbox-close]');
+let activeGalleryIndex = 0;
+let lastFocusedElement = null;
+let changeTimer;
+
+function renderLightbox(index, direction = 1) {
+  activeGalleryIndex = (index + galleryData.length) % galleryData.length;
+  const item = galleryData[activeGalleryIndex];
+  lightboxImage.classList.add('is-changing');
+  clearTimeout(changeTimer);
+  changeTimer = setTimeout(() => {
+    lightboxImage.style.backgroundImage = `url("${item.image}")`;
+    lightboxImage.style.transformOrigin = direction > 0 ? 'right center' : 'left center';
+    lightboxTitle.textContent = item.title;
+    lightboxCounter.textContent = `${String(activeGalleryIndex + 1).padStart(2, '0')} / ${String(galleryData.length).padStart(2, '0')}`;
+    lightboxProgress.style.width = `${((activeGalleryIndex + 1) / galleryData.length) * 100}%`;
+    requestAnimationFrame(() => lightboxImage.classList.remove('is-changing'));
+  }, 180);
+}
+
+function openLightbox(index) {
+  lastFocusedElement = document.activeElement;
+  renderLightbox(index, 1);
+  lightbox.classList.add('is-open');
+  lightbox.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('lightbox-lock');
+  window.setTimeout(() => nextButton.focus(), 100);
+}
+
+function closeLightbox() {
+  lightbox.classList.remove('is-open');
+  lightbox.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('lightbox-lock');
+  if (lastFocusedElement instanceof HTMLElement) lastFocusedElement.focus();
+}
+
+function stepLightbox(direction) { renderLightbox(activeGalleryIndex + direction, direction); }
+
+galleryItems.forEach((item) => item.addEventListener('click', () => openLightbox(Number(item.dataset.galleryIndex))));
+document.querySelectorAll('.gallery-open-link').forEach((button) => button.addEventListener('click', () => openLightbox(0)));
+prevButton?.addEventListener('click', () => stepLightbox(-1));
+nextButton?.addEventListener('click', () => stepLightbox(1));
+closeButtons.forEach((button) => button.addEventListener('click', closeLightbox));
+
+document.addEventListener('keydown', (event) => {
+  if (!lightbox.classList.contains('is-open')) return;
+  if (event.key === 'Escape') closeLightbox();
+  if (event.key === 'ArrowLeft') stepLightbox(-1);
+  if (event.key === 'ArrowRight') stepLightbox(1);
+});
+
+let touchStartX = 0;
+lightbox?.addEventListener('touchstart', (event) => { touchStartX = event.changedTouches[0].clientX; }, { passive: true });
+lightbox?.addEventListener('touchend', (event) => {
+  const delta = event.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(delta) > 55) stepLightbox(delta < 0 ? 1 : -1);
+}, { passive: true });
