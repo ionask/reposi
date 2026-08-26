@@ -1,127 +1,54 @@
 (() => {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer = window.matchMedia('(pointer:fine)').matches;
-  if (reduceMotion) return;
-
   document.documentElement.classList.add('smooth-scroll-ready');
 
-  // Keep the section navigation visible from every part of the page.
   const header = document.querySelector('.site-header');
   if (header) {
-    header.style.position = 'fixed';
-    header.style.top = '0';
-    header.style.left = '0';
-    header.style.right = '0';
-    header.style.zIndex = '500';
-    header.style.backdropFilter = 'blur(14px)';
-    header.style.webkitBackdropFilter = 'blur(14px)';
-    header.style.background = 'rgba(9,9,9,.72)';
-    header.style.transition = 'background .3s ease, box-shadow .3s ease, transform .3s ease';
-
-    const updateHeader = () => {
-      const scrolled = window.scrollY > 20;
-      header.style.background = scrolled ? 'rgba(9,9,9,.88)' : 'rgba(9,9,9,.58)';
-      header.style.boxShadow = scrolled ? '0 10px 40px rgba(0,0,0,.22)' : 'none';
-    };
-    window.addEventListener('scroll', updateHeader, { passive: true });
-    updateHeader();
+    header.style.position = 'fixed'; header.style.top = '0'; header.style.left = '0'; header.style.right = '0'; header.style.zIndex = '500';
+    header.style.backdropFilter = 'blur(14px)'; header.style.webkitBackdropFilter = 'blur(14px)';
+    const updateHeader = () => { const s = window.scrollY > 20; header.style.background = s ? 'rgba(9,9,9,.88)' : 'rgba(9,9,9,.58)'; header.style.boxShadow = s ? '0 10px 40px rgba(0,0,0,.22)' : 'none'; };
+    window.addEventListener('scroll', updateHeader, { passive: true }); updateHeader();
   }
 
-  let current = window.scrollY;
-  let target = current;
-  let velocity = 0;
-  let raf = null;
-  let lastTime = performance.now();
-  const ease = 0.12;
-  const maxDelta = 180;
-  const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
-
+  let current = window.scrollY, target = current, raf = null, lastTime = performance.now();
+  const ease = 0.2, maxDelta = 220;
+  const clamp = (v, min, max) => Math.min(Math.max(v, min), max);
+  const stop = () => { if (raf) cancelAnimationFrame(raf); raf = null; current = target = window.scrollY; };
   const animate = (time) => {
-    const dt = Math.min((time - lastTime) / 16.67, 2);
-    lastTime = time;
+    const dt = Math.min((time - lastTime) / 16.67, 2); lastTime = time;
     target += (current - target) * Math.min(1, ease * dt);
-    velocity += (target - window.scrollY) * 0.12;
-    velocity *= 0.78;
-    const next = window.scrollY + (target - window.scrollY) * Math.min(1, 0.20 * dt);
+    const next = window.scrollY + (target - window.scrollY) * Math.min(1, .3 * dt);
     window.scrollTo(0, next);
-    if (Math.abs(target - next) > 0.12 || Math.abs(velocity) > 0.08) raf = requestAnimationFrame(animate);
-    else { raf = null; window.scrollTo(0, target); }
+    if (Math.abs(target - next) > .12) raf = requestAnimationFrame(animate); else { raf = null; window.scrollTo(0, target); }
   };
-  const requestSmooth = () => {
-    if (!raf) { lastTime = performance.now(); raf = requestAnimationFrame(animate); }
-  };
+  const requestSmooth = () => { if (!raf) { lastTime = performance.now(); raf = requestAnimationFrame(animate); } };
 
-  window.addEventListener('wheel', (event) => {
-    if (event.ctrlKey) return;
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-    current = clamp(current + clamp(event.deltaY, -maxDelta, maxDelta), 0, maxScroll);
-    event.preventDefault();
-    requestSmooth();
-  }, { passive: false });
+  if (!reduceMotion) {
+    window.addEventListener('wheel', e => { if (e.ctrlKey) return; const max = document.documentElement.scrollHeight - innerHeight; current = clamp(current + clamp(e.deltaY, -maxDelta, maxDelta), 0, max); e.preventDefault(); requestSmooth(); }, { passive: false });
+    window.addEventListener('scroll', () => { if (Math.abs(scrollY - target) < 2) current = target = scrollY; }, { passive: true });
+  }
 
-  window.addEventListener('scroll', () => {
-    if (Math.abs(window.scrollY - target) < 2) target = window.scrollY;
-  }, { passive: true });
+  const transition = document.createElement('div'); transition.className = 'contact-transition'; transition.innerHTML = '<div class="contact-transition-line"></div><div class="contact-transition-label">INK VISION <span>CONTACT</span></div>'; document.body.appendChild(transition);
+  const sections = [...document.querySelectorAll('main section[id]')];
+  const links = [...document.querySelectorAll('.desktop-nav a[href^="#"]')];
+  const active = id => links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${id}`));
+  const updateActive = () => { const marker = scrollY + innerHeight * .35; let hit = sections[0]; sections.forEach(s => { if (s.offsetTop <= marker) hit = s; }); if (hit) active(hit.id); };
 
-  const contactTransition = document.createElement('div');
-  contactTransition.className = 'contact-transition';
-  contactTransition.innerHTML = '<div class="contact-transition-line"></div><div class="contact-transition-label">INK VISION <span>CONTACT</span></div>';
-  document.body.appendChild(contactTransition);
-
-  const goTo = (destination, isContact = false) => {
-    if (!destination) return;
-    const offset = header?.offsetHeight || 0;
-    const destinationY = Math.max(0, destination.getBoundingClientRect().top + window.scrollY - offset);
-    if (!isContact) {
-      current = destinationY;
-      target = destinationY;
-      requestSmooth();
-      return;
-    }
-
-    contactTransition.classList.remove('is-closing');
-    contactTransition.classList.add('is-active');
-    document.body.classList.add('contact-transition-lock');
-
-    window.setTimeout(() => {
-      window.scrollTo(0, destinationY);
-      current = destinationY;
-      target = destinationY;
-      window.requestAnimationFrame(() => {
-        contactTransition.classList.add('is-closing');
-        window.setTimeout(() => {
-          contactTransition.classList.remove('is-active', 'is-closing');
-          document.body.classList.remove('contact-transition-lock');
-        }, 400);
-      });
-    }, 320);
+  const goTo = (destination, isContact) => {
+    if (!destination) return; const offset = header?.offsetHeight || 0;
+    const y = Math.max(0, destination.getBoundingClientRect().top + scrollY - offset + 1); stop();
+    if (!isContact || reduceMotion) { if (reduceMotion) scrollTo({ top: y, behavior: 'smooth' }); else { current = target = y; requestSmooth(); } history.replaceState(null, '', `#${destination.id}`); return; }
+    transition.classList.remove('is-closing'); transition.classList.add('is-active'); document.body.classList.add('contact-transition-lock');
+    setTimeout(() => { scrollTo(0, y); current = target = y; history.replaceState(null, '', '#contact'); requestAnimationFrame(() => { transition.classList.add('is-closing'); setTimeout(() => { transition.classList.remove('is-active','is-closing'); document.body.classList.remove('contact-transition-lock'); updateActive(); }, 400); }); }, 320);
   };
 
-  document.querySelectorAll('a[href^="#"]').forEach((link) => {
-    link.addEventListener('click', (event) => {
-      const id = link.getAttribute('href');
-      if (!id || id === '#') return;
-      const destination = document.querySelector(id);
-      if (!destination) return;
-      event.preventDefault();
-      goTo(destination, id === '#contact');
-    });
-  });
+  document.querySelectorAll('a[href^="#"]').forEach(link => link.addEventListener('click', e => { const id = link.getAttribute('href'); if (!id || id === '#') return; const dest = document.querySelector(id); if (!dest) return; e.preventDefault(); goTo(dest, id === '#contact'); }));
+  let activeRaf = null; window.addEventListener('scroll', () => { if (!activeRaf) activeRaf = requestAnimationFrame(() => { updateActive(); activeRaf = null; }); }, { passive: true }); updateActive();
 
-  if (finePointer) {
-    const sections = [...document.querySelectorAll('main section')];
-    let previousY = window.scrollY;
-    let skew = 0;
-    let skewRaf = null;
-    const updateSkew = () => {
-      const delta = window.scrollY - previousY;
-      previousY = window.scrollY;
-      skew += (clamp(delta * -0.012, -0.35, 0.35) - skew) * 0.18;
-      sections.forEach((section) => section.style.setProperty('--scroll-skew', `${skew}deg`));
-      skewRaf = null;
-    };
-    window.addEventListener('scroll', () => {
-      if (!skewRaf) skewRaf = requestAnimationFrame(updateSkew);
-    }, { passive: true });
+  if (finePointer && !reduceMotion) {
+    const all = [...document.querySelectorAll('main section')]; let previous = scrollY, skew = 0, skewRaf = null;
+    const update = () => { const d = scrollY - previous; previous = scrollY; skew += (clamp(d * -.012, -.35, .35) - skew) * .18; all.forEach(s => s.style.setProperty('--scroll-skew', `${skew}deg`)); skewRaf = null; };
+    window.addEventListener('scroll', () => { if (!skewRaf) skewRaf = requestAnimationFrame(update); }, { passive: true });
   }
 })();
