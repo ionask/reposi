@@ -10,19 +10,19 @@
   let velocity = 0;
   let raf = null;
   let lastTime = performance.now();
-  const ease = 0.075;
-  const maxDelta = 120;
+  const ease = 0.12;
+  const maxDelta = 180;
   const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
   const animate = (time) => {
     const dt = Math.min((time - lastTime) / 16.67, 2);
     lastTime = time;
     target += (current - target) * Math.min(1, ease * dt);
-    velocity += (target - window.scrollY) * 0.08;
-    velocity *= 0.82;
-    const next = window.scrollY + (target - window.scrollY) * Math.min(1, 0.12 * dt);
+    velocity += (target - window.scrollY) * 0.12;
+    velocity *= 0.78;
+    const next = window.scrollY + (target - window.scrollY) * Math.min(1, 0.20 * dt);
     window.scrollTo(0, next);
-    if (Math.abs(target - next) > 0.08 || Math.abs(velocity) > 0.05) raf = requestAnimationFrame(animate);
+    if (Math.abs(target - next) > 0.12 || Math.abs(velocity) > 0.08) raf = requestAnimationFrame(animate);
     else { raf = null; window.scrollTo(0, target); }
   };
   const requestSmooth = () => {
@@ -70,9 +70,9 @@
         window.setTimeout(() => {
           contactTransition.classList.remove('is-active', 'is-closing');
           document.body.classList.remove('contact-transition-lock');
-        }, 650);
+        }, 400);
       });
-    }, 560);
+    }, 320);
   };
 
   document.querySelectorAll('a[href^="#"]').forEach((link) => {
