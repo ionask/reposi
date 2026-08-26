@@ -5,6 +5,28 @@
 
   document.documentElement.classList.add('smooth-scroll-ready');
 
+  // Keep the section navigation visible from every part of the page.
+  const header = document.querySelector('.site-header');
+  if (header) {
+    header.style.position = 'fixed';
+    header.style.top = '0';
+    header.style.left = '0';
+    header.style.right = '0';
+    header.style.zIndex = '500';
+    header.style.backdropFilter = 'blur(14px)';
+    header.style.webkitBackdropFilter = 'blur(14px)';
+    header.style.background = 'rgba(9,9,9,.72)';
+    header.style.transition = 'background .3s ease, box-shadow .3s ease, transform .3s ease';
+
+    const updateHeader = () => {
+      const scrolled = window.scrollY > 20;
+      header.style.background = scrolled ? 'rgba(9,9,9,.88)' : 'rgba(9,9,9,.58)';
+      header.style.boxShadow = scrolled ? '0 10px 40px rgba(0,0,0,.22)' : 'none';
+    };
+    window.addEventListener('scroll', updateHeader, { passive: true });
+    updateHeader();
+  }
+
   let current = window.scrollY;
   let target = current;
   let velocity = 0;
@@ -48,7 +70,7 @@
 
   const goTo = (destination, isContact = false) => {
     if (!destination) return;
-    const offset = document.querySelector('.site-header')?.offsetHeight || 0;
+    const offset = header?.offsetHeight || 0;
     const destinationY = Math.max(0, destination.getBoundingClientRect().top + window.scrollY - offset);
     if (!isContact) {
       current = destinationY;
