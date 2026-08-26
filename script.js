@@ -80,13 +80,11 @@ const sectionObserver = new IntersectionObserver((entries) => {
 }, { rootMargin: '-35% 0px -55% 0px', threshold: 0 });
 sections.forEach((section) => sectionObserver.observe(section));
 
-// Load the dedicated lightbox stylesheet without changing the existing design system.
 const lightboxStyles = document.createElement('link');
 lightboxStyles.rel = 'stylesheet';
 lightboxStyles.href = 'lightbox.css';
 document.head.appendChild(lightboxStyles);
 
-// Full-screen gallery lightbox.
 const galleryItems = [...document.querySelectorAll('[data-gallery-index]')].filter((el) => el.classList.contains('gallery-item'));
 const galleryData = [
   { title: 'Black & Grey', image: 'https://images.unsplash.com/photo-1542727365-19732a80dc1d?auto=format&fit=crop&w=1800&q=90' },
@@ -159,3 +157,68 @@ lightbox?.addEventListener('touchend', (event) => {
   const delta = event.changedTouches[0].clientX - touchStartX;
   if (Math.abs(delta) > 55) stepLightbox(delta < 0 ? 1 : -1);
 }, { passive: true });
+
+// Premium cursor + gallery hover interaction.
+if (window.matchMedia('(pointer:fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const cursorDot = document.createElement('div');
+  cursorDot.className = 'premium-cursor-dot';
+  const cursorRing = document.createElement('div');
+  cursorRing.className = 'premium-cursor-ring';
+  const cursorLabel = document.createElement('div');
+  cursorLabel.className = 'premium-cursor-label';
+  cursorLabel.textContent = 'VIEW PIECE';
+  document.body.append(cursorDot, cursorRing, cursorLabel);
+
+  let pointerX = window.innerWidth / 2;
+  let pointerY = window.innerHeight / 2;
+  let ringX = pointerX;
+  let ringY = pointerY;
+  let activeHover = false;
+
+  window.addEventListener('pointermove', (event) => {
+    pointerX = event.clientX;
+    pointerY = event.clientY;
+    cursorDot.style.transform = `translate3d(${pointerX}px, ${pointerY}px, 0)`;
+  }, { passive: true });
+
+  const animateCursor = () => {
+    ringX += (pointerX - ringX) * 0.14;
+    ringY += (pointerY - ringY) * 0.14;
+    cursorRing.style.transform = `translate3d(${ringX}px, ${ringY}px, 0)`;
+    cursorLabel.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
+    requestAnimationFrame(animateCursor);
+  };
+  animateCursor();
+
+  const setCursorMode = (enabled) => {
+    activeHover = enabled;
+    document.body.classList.toggle('gallery-cursor-active', enabled);
+  };
+
+  document.querySelectorAll('.gallery-item').forEach((item) => {
+    const image = item.querySelector('.gallery-img');
+    item.addEventListener('pointerenter', () => {
+      setCursorMode(true);
+      item.classList.add('is-hovered');
+    });
+    item.addEventListener('pointerleave', () => {
+      setCursorMode(false);
+      item.classList.remove('is-hovered');
+      item.style.setProperty('--mx', '50%');
+      item.style.setProperty('--my', '50%');
+      if (image) image.style.transform = '';
+    });
+    item.addEventListener('pointermove', (event) => {
+      const rect = item.getBoundingClientRect();
+      const x = (event.clientX - rect.left) / rect.width;
+      const y = (event.clientY - rect.top) / rect.height;
+      item.style.setProperty('--mx', `${x * 100}%`);
+      item.style.setProperty('--my', `${y * 100}%`);
+      if (image) {
+        const rotateX = (0.5 - y) * 2.2;
+        const rotateY = (x - 0.5) * 2.2;
+        image.style.transform = `scale(1.075) translate3d(${(x - 0.5) * 7}px, ${(y - 0.5) * 7}px, 0) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+      }
+    });
+  });
+}
